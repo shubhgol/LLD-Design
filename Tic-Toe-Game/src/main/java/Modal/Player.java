@@ -1,12 +1,10 @@
 package Modal;
 
 public class Player {
-     public String playerName;
-     public PlayingSymbol symbol;
-
-    public Player(String playerName,  PlayingSymbol symbol){
-        this.playerName = playerName;
-        this.symbol = symbol;
+    public String name;
+    public PlayingSymbol symbol;
+    public Player(String name, PlayingSymbol symbol){
+         this.name = name;
+         this.symbol = symbol;
     }
-
 }

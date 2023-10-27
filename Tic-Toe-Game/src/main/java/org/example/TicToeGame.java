@@ -11,110 +11,98 @@ import java.util.Scanner;
 
 public class TicToeGame {
     Deque<Player> players = new LinkedList<>();
-    Board gameBoard;
+    Board gameboard;
 
-    void initializeGame(int size){
-        gameBoard = new Board(3);
-        PlayingSymbol symbolX = new PlayingSymbol(SymbolType.X);
-        PlayingSymbol symbolO = new PlayingSymbol(SymbolType.O);
-        Player player1 = new Player("player1", symbolX);
-        Player player2 = new Player("player2", symbolO);
+    TicToeGame(){
+        gameboard = new Board(3);
+        SymbolX symbolX = new SymbolX();
+        SymbolO symbolO = new SymbolO();
+        Player player1 = new Player("Player1", symbolX);
+        Player player2 = new Player("Player2", symbolO);
 
         players.add(player1);
         players.add(player2);
     }
 
-    public   String startGame(){
+    public void startGame(){
         boolean noWinner = true;
+
         while(noWinner){
-            boolean isFreeSpace = gameBoard.isFreeSpaceExist();
-            gameBoard.printBoard();
+            gameboard.printBoard();
+            boolean isFreeSpace = gameboard.checkFreeCellInBoard();
+
             if(!isFreeSpace){
                 noWinner = false;
                 continue;
             }
-
             Player playerTurn = players.removeFirst();
-            System.out.print("Player:" + playerTurn.playerName + " Enter row,column: ");
+            System.out.print("Player:" + playerTurn.name + " Enter row,column: ");
+            Scanner scanner = new Scanner(System.in);
+            String input = scanner.nextLine();
+            String []values = input.split(",");
+            int row = Integer.parseInt(values[0]);
+            int column = Integer.parseInt(values[1]);
 
-            Scanner inputScanner = new Scanner(System.in);
-            String s = inputScanner.nextLine();
-            String values[] = s.split(" ");
-            int row;
-            int column;
-            try {
-                row = Integer.valueOf(values[0]);
-                column = Integer.valueOf(values[1]);
-            } catch (NumberFormatException e){
-                System.out.println("Invalid Input, try again");
-                players.addFirst(playerTurn);
-                continue;
-            }
-            boolean isPlayerSymbolAddedSuccessfully = gameBoard.addSymbol(row, column, playerTurn.symbol);
+            boolean isSymbolAdded = gameboard.addSymbol(row, column, playerTurn.symbol);
 
-            if(!isPlayerSymbolAddedSuccessfully){
-                System.out.println("Incorrect position chosen, try again");
-                players.addFirst(playerTurn);
-                continue;
-            }
+              if(!isSymbolAdded){
+                   players.addFirst(playerTurn);
+                   System.out.println("Please Try Again!");
+              } else {
+                  boolean isPlayerWin = checkIsPlayerWin(row, column, playerTurn.symbol);
 
-            players.addLast(playerTurn);
-
-            boolean winner = isThereWinner(row, column,playerTurn.symbol);
-
-            if(winner){
-                gameBoard.printBoard();
-                return playerTurn.playerName;
-            }
+                  if(isPlayerWin){
+                      System.out.println(playerTurn.name+" "+"win the game");
+                      gameboard.printBoard();
+                      noWinner = false;
+                  }
+                  players.addLast(playerTurn);
+              }
 
         }
 
-
-        return "Tie";
-
+        if(noWinner){
+            gameboard.printBoard();
+            System.out.println("Match has Tied. Please Restart Game!");
+        }
     }
 
+    private boolean checkIsPlayerWin(int row, int column, PlayingSymbol symbol){
+        boolean isRowMatch = true;
+        boolean isColumnMatch = true;
+        boolean isDigonalMatch = true;
+        boolean isAntiDiagonalMatch = true;
 
-    public boolean isThereWinner(int row, int column, PlayingSymbol playingSymbol) {
+        //row check
+        for(int i=0; i<gameboard.size; i++){
+            if (gameboard.board[row][i] != symbol) {
+                isRowMatch = false;
+                break;
+            }
+        }
+        //column check
+        for(int i=0; i<gameboard.size; i++){
+            if (gameboard.board[i][column] != symbol) {
+                isColumnMatch = false;
+                break;
+            }
+        }
+        //diagonal check
+        for(int i=0; i<gameboard.size; i++){
+            if (gameboard.board[i][i] != symbol) {
+                isDigonalMatch = false;
+                break;
+            }
+        }
+        //anti-diagonal check
 
-        boolean rowMatch = true;
-        boolean columnMatch = true;
-        boolean diagonalMatch = true;
-        boolean antiDiagonalMatch = true;
-
-        //need to check in row
-        for(int i=0;i<gameBoard.size;i++) {
-
-            if(gameBoard.board[row][i] == null || gameBoard.board[row][i].symbol.name() != playingSymbol.symbol.name()) {
-                rowMatch = false;
+        for(int i=0; i<gameboard.size; i++){
+            if (gameboard.board[i][gameboard.size-i-1] != symbol) {
+                isAntiDiagonalMatch = false;
+                break;
             }
         }
 
-        //need to check in column
-        for(int i=0;i<gameBoard.size;i++) {
-
-            if(gameBoard.board[i][column] == null || gameBoard.board[i][column].symbol.name() != playingSymbol.symbol.name()) {
-                columnMatch = false;
-            }
-        }
-
-        //need to check diagonals
-        for(int i=0, j=0; i<gameBoard.size;i++,j++) {
-            if (gameBoard.board[i][j] == null || gameBoard.board[i][j].symbol.name() != playingSymbol.symbol.name()) {
-                diagonalMatch = false;
-            }
-        }
-
-        //need to check anti-diagonals
-        for(int i=0, j=gameBoard.size-1; i<gameBoard.size;i++,j--) {
-            if (gameBoard.board[i][j] == null || gameBoard.board[i][j].symbol.name() != playingSymbol.symbol.name()) {
-                antiDiagonalMatch = false;
-            }
-        }
-
-        return rowMatch || columnMatch || diagonalMatch || antiDiagonalMatch;
+        return  isRowMatch || isColumnMatch || isDigonalMatch || isAntiDiagonalMatch;
     }
-
-
-
 }
